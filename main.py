@@ -1,10 +1,24 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 
+from exceptions import AppException, NotFoundException
 from routers.products import router as products_router
 from settings.db import ping
 
 app = FastAPI()
 app.include_router(products_router)
+
+
+@app.exception_handler(NotFoundException)
+async def not_found_handler(request: Request, exc: NotFoundException):
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND, content={"detail": exc.message}
+    )
+
+
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 
 @app.get("/")

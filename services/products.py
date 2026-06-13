@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from exceptions import NotFoundException
 from models import Product
 from schemas.product import ProductCreate, ProductUpdate
 from settings.db import get_db
@@ -19,7 +20,12 @@ class ProductService:
 
     async def get_by_id(self, product_id: int) -> Product | None:
         result = await self.db.execute(select(Product).where(Product.id == product_id))
-        return result.scalars().first()
+        product = result.scalars().first()
+
+        if not product:
+            raise NotFoundException(f"Product with id {product_id} not found")
+
+        return product
 
     async def create(self, data: ProductCreate) -> Product:
         new_product = Product(**data.model_dump())

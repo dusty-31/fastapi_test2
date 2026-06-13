@@ -16,16 +16,7 @@ router = APIRouter(prefix="/products", tags=["Products"])
     tags=["Products"],
 )
 async def get_products(product_service: ProductService = Depends(get_product_service)):
-    try:
-        return await product_service.get_all()
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Failed to get products")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get products",
-        ) from exc
+    return await product_service.get_all()
 
 
 @router.get(
@@ -36,24 +27,7 @@ async def get_products(product_service: ProductService = Depends(get_product_ser
 async def get_product(
     product_id: int, product_service: ProductService = Depends(get_product_service)
 ):
-    try:
-        product = await product_service.get_by_id(product_id=product_id)
-
-        if not product:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
-            )
-
-        return product
-
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Failed to get product with id %d", product_id)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get product",
-        ) from exc
+    return await product_service.get_by_id(product_id=product_id)
 
 
 @router.post(
